@@ -3,11 +3,10 @@
 pragma solidity ^0.8.4;
 
 import "./interfaces/ICZPawnBook.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
-contract CZPawnBook is ICZPawnBook, Ownable, AccessControlEnumerable {
-    bytes32 BOOKKEEPER = keccak256("BOOKKEEPER");
+contract CZPawnBook is ICZPawnBook, AccessControlEnumerable {
+    bytes32 public constant BOOKKEEPER = keccak256("BOOKKEEPER");
 
     struct Entry {
         uint256 debt;
@@ -16,13 +15,32 @@ contract CZPawnBook is ICZPawnBook, Ownable, AccessControlEnumerable {
         bool exists;
     }
 
-    mapping(address => mapping(address => mapping(uint256 => Entry))) accountNftIdToEntry;
-
-    constructor() Ownable() {
-        _grantRole(BOOKKEEPER, msg.sender);
+    constructor() {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    function getEntry(
+    mapping(address => mapping(address => mapping(uint256 => Entry))) accountNftIdToEntry;
+
+    function createEntry(
+        address _for,
+        address _nft,
+        uint256 _id,
+        uint256 _debt,
+        uint64 _overdueEpoch,
+        uint64 _expirationEpoch
+    ) external override onlyRole(BOOKKEEPER) {
+        Entry storage entry = accountNftIdToEntry[_for][_nft][_id];
+        require(
+            !entry.exists,
+            "CZPawnBook: Attempting to register loan for active entry"
+        );
+        entry.debt = _debt;
+        entry.overdueEpoch = _overdueEpoch;
+        entry.expirationEpoch = _expirationEpoch;
+        entry.exists = true;
+    }
+
+    function readEntry(
         address _for,
         address _nft,
         uint256 _id
@@ -46,7 +64,7 @@ contract CZPawnBook is ICZPawnBook, Ownable, AccessControlEnumerable {
         );
     }
 
-    function recordLoanCreation(
+    function updateEntry(
         address _for,
         address _nft,
         uint256 _id,
@@ -56,34 +74,15 @@ contract CZPawnBook is ICZPawnBook, Ownable, AccessControlEnumerable {
     ) external override onlyRole(BOOKKEEPER) {
         Entry storage entry = accountNftIdToEntry[_for][_nft][_id];
         require(
-            !entry.exists,
-            "CZPawnBook: Attempting to register loan for active entry"
+            entry.exists,
+            "CZPawnBook: Attempting to update non-existant entry"
         );
         entry.debt = _debt;
         entry.overdueEpoch = _overdueEpoch;
         entry.expirationEpoch = _expirationEpoch;
-        entry.exists = true;
     }
 
-    function recordLoanExtension(
-        address _for,
-        address _nft,
-        uint256 _id,
-        uint64 _overdueExtensionSeconds,
-        uint64 _expirationExtensionSeconds,
-        int256 _debtDelta
-    ) external override onlyRole(BOOKKEEPER) {
-        Entry storage entry = accountNftIdToEntry[_for][_nft][_id];
-        require(
-            entry.exists,
-            "CZPawnBook: Attempting to extend non-existant loan"
-        );
-        entry.overdueEpoch += _overdueExtensionSeconds;
-        entry.expirationEpoch += _expirationExtensionSeconds;
-        entry.debt = uint256(int256(entry.debt) + _debtDelta);
-    }
-
-    function recordLoanRepayment(
+    function deleteEntry(
         address _for,
         address _nft,
         uint256 _id
@@ -91,7 +90,7 @@ contract CZPawnBook is ICZPawnBook, Ownable, AccessControlEnumerable {
         Entry memory entry = accountNftIdToEntry[_for][_nft][_id];
         require(
             entry.exists,
-            "CZPawnBook: Attempting to extend non-existant loan"
+            "CZPawnBook: Attempting to delete non-existant entry"
         );
         delete accountNftIdToEntry[_for][_nft][_id];
     }

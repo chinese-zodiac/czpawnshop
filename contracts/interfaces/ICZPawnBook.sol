@@ -3,7 +3,16 @@
 pragma solidity ^0.8.4;
 
 interface ICZPawnBook {
-    function getEntry(
+    function createEntry(
+        address _for,
+        address _nft,
+        uint256 _id,
+        uint256 _debt,
+        uint64 _overdueEpoch,
+        uint64 _expirationEpoch
+    ) external;
+
+    function readEntry(
         address _for,
         address _nft,
         uint256 _id
@@ -17,7 +26,7 @@ interface ICZPawnBook {
             bool exists_
         );
 
-    function recordLoanCreation(
+    function updateEntry(
         address _for,
         address _nft,
         uint256 _id,
@@ -26,16 +35,7 @@ interface ICZPawnBook {
         uint64 _expirationEpoch
     ) external;
 
-    function recordLoanExtension(
-        address _for,
-        address _nft,
-        uint256 _id,
-        uint64 _overdueExtensionSeconds,
-        uint64 _expirationExtensionSeconds,
-        int256 _debtDelta
-    ) external;
-
-    function recordLoanRepayment(
+    function deleteEntry(
         address _for,
         address _nft,
         uint256 _id
