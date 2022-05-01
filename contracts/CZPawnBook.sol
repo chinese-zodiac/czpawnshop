@@ -134,6 +134,15 @@ contract CZPawnBook is ICZPawnBook, AccessControlEnumerable {
         return acountToEntryIds[_for].size();
     }
 
+    function isEntryOwnedByAccount(
+        address _for,
+        address _nft,
+        uint256 _id
+    ) external view override returns (bool) {
+        return
+            acountToEntryIds[_for].getIndexOfKey(getEntryId(_nft, _id)) != -1;
+    }
+
     function getTotalEntries() external view override returns (uint256 count_) {
         return entryIds.size();
     }

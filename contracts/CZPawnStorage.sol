@@ -18,7 +18,7 @@ contract CZPawnStorage is ICZPawnStorage, AccessControlEnumerable {
         uint256 _id,
         address _to
     ) public override onlyRole(CUSTODIAN) {
-        _nft.transferFrom(address(this), _to, _id);
+        _nft.safeTransferFrom(address(this), _to, _id);
     }
 
     function withdrawAll(IERC721Enumerable _nft, address _to)
@@ -28,7 +28,7 @@ contract CZPawnStorage is ICZPawnStorage, AccessControlEnumerable {
     {
         uint256 quantity = _nft.balanceOf(address(this));
         for (uint256 i = 0; i < quantity; i++) {
-            _nft.transferFrom(
+            _nft.safeTransferFrom(
                 address(this),
                 _to,
                 _nft.tokenOfOwnerByIndex(address(this), i)

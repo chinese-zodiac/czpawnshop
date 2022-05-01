@@ -56,4 +56,10 @@ interface ICZPawnBook {
         returns (uint256 count_);
 
     function getTotalEntries() external view returns (uint256 count_);
+
+    function isEntryOwnedByAccount(
+        address _for,
+        address _nft,
+        uint256 _id
+    ) external view returns (bool);
 }
