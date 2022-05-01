@@ -2,10 +2,10 @@
 // Authored by Plastic Digits
 pragma solidity ^0.8.4;
 
-import "./interfaces/ICZPawnAppraisal.sol";
+import "./interfaces/ICZPawnAppraiser.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract CZPawnAppraisal_CZodiacNFT is ICZPawnAppraisal, Ownable {
+contract CZPawnAppraiser_CZodiacNFT is ICZPawnAppraiser, Ownable {
     bool public override allSame = true;
 
     uint256 pawnFee = 0.01 ether;

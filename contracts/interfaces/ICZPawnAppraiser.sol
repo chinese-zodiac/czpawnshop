@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-interface ICZPawnAppraisal {
+interface ICZPawnAppraiser {
     function allSame() external view returns (bool); //If all NFT IDs return the same values
 
     function getPawnFee(uint256 _nftId) external view returns (uint256 _wad);
