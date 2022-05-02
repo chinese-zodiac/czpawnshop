@@ -10,9 +10,7 @@ import "./interfaces/ICZPawnBook.sol";
 import "./interfaces/ICZPawnAppraiser.sol";
 import "./interfaces/ICZPawnStorage.sol";
 
-contract CZPawnStorage is AccessControlEnumerable, Ownable {
-    bytes32 public constant SHOPKEEPER = keccak256("SHOPKEEPER");
-
+contract CZPawnShop is Ownable {
     ICZPawnBook public pawnBook;
     ICZPawnStorage public pawnStorage;
     ERC20PresetMinterPauser public czusd;
@@ -32,10 +30,6 @@ contract CZPawnStorage is AccessControlEnumerable, Ownable {
     function borrow(IERC721 _nft, uint256 _id) external payable {
         _nft.safeTransferFrom(msg.sender, address(pawnStorage), _id);
         ICZPawnAppraiser appraiser = nftToAppraiser[_nft];
-        require(
-            msg.value >= appraiser.getPawnFee(_id),
-            "CZPawnShop: Not enough BNB to cover service fee."
-        );
         pawnBook.createEntry(
             msg.sender,
             address(_nft),
@@ -45,6 +39,10 @@ contract CZPawnStorage is AccessControlEnumerable, Ownable {
             uint64(appraiser.getExpiredEpoch(_id, block.timestamp))
         );
         czusd.mint(msg.sender, appraiser.getQuote(_id));
+        require(
+            msg.value >= appraiser.getPawnFee(_id),
+            "CZPawnShop: Not enough BNB to cover service fee."
+        );
         if (msg.value != 0) payable(owner()).transfer(msg.value);
     }
 
@@ -102,6 +100,7 @@ contract CZPawnStorage is AccessControlEnumerable, Ownable {
                 appraiser.getExpiredEpoch(_id, block.timestamp)
             );
         } else {
+            bnbFee = appraiser.getPawnFee(_id);
             uint64 period = uint64(appraiser.getTerm(_id));
             newOverdueEpoch = overdueEpoch + period;
             newExpirationEpoch = expirationEpoch + period;
