@@ -58,4 +58,20 @@ describe("CZPawnStorage", function () {
     expect(ownerBalance).to.eq(1);
   });
 
+  it("Should withdraw multiple NFT", async function () {
+    await czNft.connect(deployer).mint("ipfs://uri",3);
+    await czNft.connect(deployer).mint("ipfs://uri",3);
+    await czNft.connect(deployer).mint("ipfs://uri",3);
+    const totalSupply = await czNft.totalSupply();
+    await czNft.connect(deployer).transferFrom(deployer.address,czPawnStorage.address,totalSupply.sub(1));
+    await czNft.connect(deployer).transferFrom(deployer.address,czPawnStorage.address,totalSupply.sub(2));
+    await czNft.connect(deployer).transferFrom(deployer.address,czPawnStorage.address,totalSupply.sub(3));
+    const storageBalanceInitial = await czNft.balanceOf(czPawnStorage.address);
+    await czPawnStorage.withdrawAll(czNft.address,owner.address);
+    const storageBalanceFinal = await czNft.balanceOf(czPawnStorage.address);
+    const ownerBalance = await czNft.balanceOf(owner.address);    
+    expect(storageBalanceInitial).to.eq(3);
+    expect(storageBalanceFinal).to.eq(0);
+    expect(ownerBalance).to.eq(4);
+  });
 });

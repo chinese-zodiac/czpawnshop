@@ -31,7 +31,7 @@ contract CZPawnStorage is ICZPawnStorage, AccessControlEnumerable {
             _nft.safeTransferFrom(
                 address(this),
                 _to,
-                _nft.tokenOfOwnerByIndex(address(this), i)
+                _nft.tokenOfOwnerByIndex(address(this), 0)
             );
         }
     }
