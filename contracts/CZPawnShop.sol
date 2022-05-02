@@ -19,9 +19,14 @@ contract CZPawnStorage is AccessControlEnumerable, Ownable {
 
     mapping(IERC721 => ICZPawnAppraiser) public nftToAppraiser;
 
-    constructor(ICZPawnBook _pawnBook, ICZPawnStorage _pawnStorage) {
+    constructor(
+        ICZPawnBook _pawnBook,
+        ICZPawnStorage _pawnStorage,
+        ERC20PresetMinterPauser _czusd
+    ) {
         pawnBook = _pawnBook;
         pawnStorage = _pawnStorage;
+        czusd = _czusd;
     }
 
     function borrow(IERC721 _nft, uint256 _id) external payable {
@@ -125,5 +130,18 @@ contract CZPawnStorage is AccessControlEnumerable, Ownable {
         );
     }
 
-    //TODO: setters for nftToAppraiser, pawnBook, pawnStorage
+    function setNftToAppraiser(IERC721 _nft, ICZPawnAppraiser _appraiser)
+        external
+        onlyOwner
+    {
+        nftToAppraiser[_nft] = _appraiser;
+    }
+
+    function setPawnBook(ICZPawnBook _book) external onlyOwner {
+        pawnBook = _book;
+    }
+
+    function setPawnStorage(ICZPawnStorage _pawnStorage) external onlyOwner {
+        pawnStorage = _pawnStorage;
+    }
 }
